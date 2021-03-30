@@ -54,7 +54,7 @@ public class Raytracer00 implements IRayTracerImplementation {
 	    // set attributes h, w
 	    h = (float) (2 * near * Math.tan(fovyDegree/2));
 	    w = h * aspect;
-	    
+	    //Test push comment
     }
 
     @Override
