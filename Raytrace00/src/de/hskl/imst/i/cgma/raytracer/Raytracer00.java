@@ -49,16 +49,16 @@ public class Raytracer00 implements IRayTracerImplementation {
 	    // set attributes resx, resy, aspect
 	    resx = gui.getResX();
 	    resy = gui.getResY();
-	    aspect = resx / resy;
+	    aspect = (float) resx / resy;
 	    
 	    // set attributes h, w
-	    h = (float) (2 * near * Math.tan(fovyDegree/2));
+	    h = (float) (2.0f * near * Math.tan(fovyRadians/2.0f));
 	    w = h * aspect;
     }
 
     @Override
     public void doRayTrace() {
-	float x, y, z;			// intersection point in viewing plane
+	float x, y, z;				// intersection point in viewing plane
 	float rayEx, rayEy, rayEz;	// eye point==ray starting point
 	float rayVx, rayVy, rayVz;	// ray vector
 	Color color;
@@ -72,27 +72,30 @@ public class Raytracer00 implements IRayTracerImplementation {
 	
 	z = -near;
 
-
-	
 	Random rd = new Random();
 	// xp, yp: pixel coordinates
 	for (int xp = 0; xp < resx; ++xp) {
 	    for (int yp = 0; yp < resy; ++yp) {
 		// for demo purposes
 		// gui.setPixel(xp, yp, Color.WHITE.getRGB());	
-		gui.setPixel(xp, yp, new Color(rd.nextFloat(), rd.nextFloat(), rd.nextFloat()).getRGB());
+//		gui.setPixel(xp, yp, new Color(rd.nextFloat(), rd.nextFloat(), rd.nextFloat()).getRGB());
 
 		// x, y: view coordinates
-
+	    x = ((float) xp / (float) (resx - 1)) * w - w/2;
+	    y = (((float) (resy - 1) - (float) yp) / (float) (resy - 1)) * h - h/2;
 
 		// ray vector
-
+	    rayVx = x - rayEx;
+	    rayVy = y - rayEy;
+	    rayVz = z - rayEz;
 		
-		
-    		// get color or null along the ray
-    		//color=traceRayAndGetColor...
-    		// if color!=null set pixel with color
-		
+    	// get color or null along the ray
+    	//color=traceRayAndGetColor...
+    	// if color!=null set pixel with color
+		color = traceRayAndGetColor(rayEx, rayEy, rayEz, rayVx, rayVy, rayVz);
+		if(color != null) {
+			gui.setPixel(xp, yp, color.getRGB());
+		}
 		
 	    }
 	}
@@ -123,13 +126,23 @@ public class Raytracer00 implements IRayTracerImplementation {
 		float t;
 		
 		// ray intersection uses quadratic equation
+		// a = rayV {scalar} rayV
+		// b = 2 * rayV {scalar} eyeV - m (m mittelpunkt von kreis)
+		// c = (eyeV - m) * (eyeV - m) - r^2
 		float a, b, c, d;
-
+		float mex, mey, mez;
+		mex = rayEx - sphere.center[0];
+		mey = rayEy - sphere.center[1];
+		mez = rayEz - sphere.center[2];
+		a = rayVx * rayVx + rayVy * rayVy + rayVz * rayVz;
+		b = 2 * ((rayVx * mex) + (rayVy * mey) + (rayVz * mez));
+		c = mex * mex + mey * mey + mez * mez - (float) Math.pow(sphere.radius, 2);
 
 		
 
 		// positive discriminant determines intersection
-		d = -42;
+		d = (float) Math.pow(b, 2) - 4 * a * c;
+		
 		// no intersection point? => next object
 		if (d <= 0)
 		    continue;
@@ -138,7 +151,7 @@ public class Raytracer00 implements IRayTracerImplementation {
 
 		// calculate first intersection point with sphere along the
 		// ray
-		t = 0;
+		t = (float) ((-b - Math.sqrt(d)) / (2*a));
 
 		// already a closer intersection point? => next object
 		if (t >= minT)
