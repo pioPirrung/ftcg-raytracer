@@ -122,11 +122,11 @@ public class Raytracer00 implements IRayTracerImplementation {
 		float[] v = new float[3];
 		float[] l = new float[3];
 
-		// TODO: HELLO
+		// TODO: noch normieren?
 		// viewing vector at intersection point
-		// v[0] =
-		// v[1] =
-		// v[2] =
+		 v[0] = -rayVx;
+		 v[1] = -rayVy;
+		 v[2] = -rayVz;
 
 		RTFile scene;
 		I_Sphere sphere;
