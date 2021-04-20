@@ -122,11 +122,12 @@ public class Raytracer00 implements IRayTracerImplementation {
 		float[] v = new float[3];
 		float[] l = new float[3];
 
-		// TODO: noch normieren?
 		// viewing vector at intersection point
-		 v[0] = -rayVx;
-		 v[1] = -rayVy;
-		 v[2] = -rayVz;
+		v[0] = -rayVx;
+		v[1] = -rayVy;
+		v[2] = -rayVz;
+		
+		normalize(v);
 
 		RTFile scene;
 		I_Sphere sphere;
@@ -177,21 +178,20 @@ public class Raytracer00 implements IRayTracerImplementation {
 
 				// from here: t < minT
 				// I'm the winner until now!
-
 				minT = t;
 				minObjectsIndex = objectsNumber;
 
-				// TODO: HELLO 2
 				// prepare everything for phong shading
 				// the intersection point
-				// minIP[0] =
-				// minIP[1] =
-				// minIP[2] =
+				minIP[0] = (float) (rayEx + minT * rayVx);
+				minIP[1] = (float) (rayEy + minT * rayVy);
+				minIP[2] = (float) (rayEz + minT * rayVz);
 
 				// the normal vector at the intersection point
-				// minN[0] =
-				// minN[1] =
-				// minN[2] =
+				minN[0] = minIP[0] - sphere.center[0];
+				minN[1] = minIP[1] - sphere.center[1];
+				minN[2] = minIP[2] - sphere.center[2];
+				normalize(minN);
 
 				// the material
 				minMaterial = sphere.material;
@@ -274,8 +274,12 @@ public class Raytracer00 implements IRayTracerImplementation {
 	// CAUTION: vec is an in-/output parameter; the referenced object will be
 	// altered!
 	private float normalize(float[] vec) {
-		float l = 1.0f;
-
+		float l = (float) Math.sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2]);
+		
+		vec[0] = vec[0] / l;
+		vec[1] = vec[1] / l;
+		vec[2] = vec[2] / l;
+		
 		return l;
 	}
 
