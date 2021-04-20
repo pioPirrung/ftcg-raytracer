@@ -126,7 +126,6 @@ public class Raytracer00 implements IRayTracerImplementation {
 		v[0] = -rayVx;
 		v[1] = -rayVy;
 		v[2] = -rayVz;
-		
 		normalize(v);
 
 		RTFile scene;
@@ -204,11 +203,11 @@ public class Raytracer00 implements IRayTracerImplementation {
 		if (minObjectsIndex == -1)
 			return null;
 
-		//TODO: HELLO 3
 		// light vector at the intersection point
-		// l[0] =
-		// l[1] =
-		// l[2] =
+		l[0] = this.ICenter[0] - minIP[0];
+		l[1] = this.ICenter[1] - minIP[1];
+		l[2] = this.ICenter[2] - minIP[2];
+		normalize(l);
 
 		// decide which shading model will be applied
 		// implicit: only phong shading available => shade=illuminate
@@ -223,63 +222,62 @@ public class Raytracer00 implements IRayTracerImplementation {
 
 	}
 
-	//TODO: PHONG
+	// TODO: PHONG
 	// calculate phong illumination model with material parameters material and
 	// materialN, light vector l, normal vector n, viewing vector v, ambient
 	// light Ia, diffuse and specular light Ids
 	// return value is a new Color object
-	private Color phongIlluminate(float[] material, float materialN, float[] l, float[] n, float[] v, float[] Ia,
-			float[] Ids) {
+	private Color phongIlluminate(float[] material, float materialN, float[] l, float[] n, float[] v, float[] Ia, float[] Ids) {
 		float ir = 0, ig = 0, ib = 0; // reflected intensity, rgb channels
 		float[] r = new float[3]; // reflection vector
 		float ln, rv; // scalar products <l,n> and <r,v>
 
 		// <l,n>
+		ln = l[0] * n[0] + l[1] * n[1] + l[2] * n[2];
 
 		// ambient component, Ia*ra
-//	ir += 
-//	ig += 
-//	ib += 
-//
-//	// diffuse component, Ids*rd*<l,n>
-//	if (ln > 0) {
-//	    ir += 
-//	    ig += 
-//	    ib += 
-//
-//	    // reflection vector r=2*<l,n>*n-l
-//	    r[0] = 
-//	    r[1] = 
-//	    r[2] = 
-//
-//	    // <r,v>
-//	    rv = 
-//
-//	    // specular component, Ids*rs*<r,v>^n
-//	    if (rv > 0) {
-//		float pow = 
-//		ir += 
-//		ig += 
-//		ib += 
-//	    }
-//	}
+		ir += Ia[0] * material[0];
+		ig += Ia[1] * material[1];
+		ib += Ia[2] * material[2];
+
+		// diffuse component, Ids*rd*<l,n>
+		if (ln > 0) {
+			ir += Ids[0] * material[3] * ln;
+			ig += Ids[1] * material[4] * ln;
+			ib += Ids[2] * material[5] * ln;
+
+			// reflection vector r=2*<l,n>*n-l
+			r[0] = 2.0f * ln * n[0] - l[0];
+			r[1] = 2.0f * ln * n[1] - l[1];
+			r[2] = 2.0f * ln * n[2] - l[2];
+			normalize(r);
+
+			// <r,v>
+			rv = r[0] * v[0] + r[1] * v[1] + r[2] * v[2];
+
+			// specular component, Ids*rs*<r,v>^n
+			if (rv > 0) {
+				float pow = (float) Math.pow(rv, materialN);
+				ir += Ids[0] * material[6] * pow;
+				ig += Ids[1] * material[7] * pow;
+				ib += Ids[2] * material[8] * pow;
+			}
+		}
 
 		// System.out.println(ir+" "+ig+" "+ib);
-//	return new Color();
-		return null;
+		return new Color(ir, ig, ib);
 	}
 
-	//TODO: Normalisieren
 	// vector normalization
 	// CAUTION: vec is an in-/output parameter; the referenced object will be
 	// altered!
 	private float normalize(float[] vec) {
-		float l = (float) Math.sqrt(vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2]);
-		
+		float l = (float) Math.sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
+
 		vec[0] = vec[0] / l;
 		vec[1] = vec[1] / l;
 		vec[2] = vec[2] / l;
-		
+
 		return l;
 	}
 
