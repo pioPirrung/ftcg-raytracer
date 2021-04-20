@@ -265,7 +265,7 @@ public class Raytracer00 implements IRayTracerImplementation {
 		}
 
 		// System.out.println(ir+" "+ig+" "+ib);
-		return new Color(ir, ig, ib);
+		return new Color(ir>1?1:ir, ig>1?1:ig, ib>1?1:ib);
 	}
 
 	// vector normalization
