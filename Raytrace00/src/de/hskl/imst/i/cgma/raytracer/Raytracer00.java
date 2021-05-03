@@ -36,7 +36,8 @@ public class Raytracer00 implements IRayTracerImplementation {
 	private Raytracer00() {
 		try {
 
-			gui.addObject(RTFileReader.read(I_Sphere.class, new File("data/ikugel.dat")));
+			//gui.addObject(RTFileReader.read(I_Sphere.class, new File("data/ikugel.dat")));
+			gui.addObject(RTFileReader.read(I_Sphere.class, new File("data/dreieck1.dat")));
 
 			objects = gui.getObjects();
 
@@ -130,6 +131,7 @@ public class Raytracer00 implements IRayTracerImplementation {
 
 		RTFile scene;
 		I_Sphere sphere;
+		T_Mesh mesh;
 
 		// loop over all scene objects to find the nearest intersection, that
 		// is:
@@ -196,7 +198,97 @@ public class Raytracer00 implements IRayTracerImplementation {
 				minMaterial = sphere.material;
 				minMaterialN = sphere.materialN;
 
-			}
+			} else if (scene instanceof T_Mesh) {
+				mesh = (T_Mesh) scene;
+
+				float t;
+				float[] n;
+				float[] ip = new float[3];
+
+				float a, rayVn, pen;
+				float[] p1, p2, p3;
+				float[] ai = new float[3];
+
+				// loop over all triangles
+				for (int i = 0; i < mesh.triangles.length; i++) {
+				    // get the three vertices
+				    p1 = mesh.vertices[mesh.triangles[i][0]];
+				    p2 = mesh.vertices[mesh.triangles[i][1]];
+				    p3 = mesh.vertices[mesh.triangles[i][2]];
+
+				    // intermediate version
+				    // calculate normal n and triangle area a
+				    // a = 1/2 * |n| wobei n vector
+				    n = new float[3];
+				    n[0] = p2[1] * p1[2] - p2[2] * p1[1];
+				    n[1] = p2[2] * p1[0] - p2[0] * p1[2];
+				    n[2] = p2[0] * p1[1] - p2[1] * p1[0];
+				    float ln = normalize(n);
+				    a = 1/2 * ln;
+
+				    //????? / länge von rayV und n ??
+				    rayVn = rayVx * n[0] + rayVy * n[1] + rayVz * n[2];
+
+				    // backface? => next triangle
+				    if (rayVn >= 0)
+					continue;	    
+
+				    // no intersection point? => next triangle
+				    if (Math.abs(rayVn) < 1E-7)
+					continue;
+
+				    pen = 
+
+				    // calculate intersection point with plane along the ray
+				    t = 
+
+				    // already a closer intersection point? => next triangle
+				    if (t >= minT)
+					continue;
+
+				    // the intersection point with the plane
+				    ip[0] = 
+				    ip[1] = 
+				    ip[2] = 
+
+				    // no intersection point with the triangle? => next
+				    // triangle
+				    if (!triangleTest(ip, p1, p2, p3, a, ai))
+					continue;
+
+				    // from here: t < minT and triangle intersection
+				    // I'm the winner until now!
+
+				    minT = t;
+				    minObjectsIndex = objectsNumber;
+				    minIndex = i;
+
+				    // prepare everything for shading alternatives
+
+				    // the intersection point
+				    minIP[0] = ip[0];
+				    minIP[1] = ip[1];
+				    minIP[2] = ip[2];
+
+				    switch (mesh.fgp) {
+				    case 'f':
+				    case 'F':
+					
+					 // the normal is the surface normal 
+					 minN[0] = n[0];
+					 minN[1] = n[1]; 
+					 minN[2] = n[2];
+					  
+					 // the material is the material of the first triangle point 
+					 int matIndex = mesh.verticesMat[mesh.triangles[minIndex][0]];
+					 minMaterial = mesh.materials[matIndex]; 
+					 minMaterialN= mesh.materialsN[matIndex];
+					
+					break;
+				    }
+				}
+			} else 
+				continue;
 		}
 
 		// no intersection point found => return with no result
@@ -213,6 +305,16 @@ public class Raytracer00 implements IRayTracerImplementation {
 		// implicit: only phong shading available => shade=illuminate
 		if (objects.get(minObjectsIndex) instanceof I_Sphere)
 			return phongIlluminate(minMaterial, minMaterialN, l, minN, v, Ia, Ids);
+		else if(objects.get(minObjectsIndex).getHeader() == "TRIANGLE_MESH") {
+			mesh = ((T_Mesh) objects.get(minObjectsIndex));
+		    switch (mesh.fgp) {
+		    case 'f':
+		    case 'F':
+			// illumination can be calculated here
+			// this is a variant between flat und phong shading
+			return phongIlluminate(minMaterial, minMaterialN, l, minN, v, Ia, Ids);
+		    }
+		}
 
 		return null;
 
@@ -222,7 +324,7 @@ public class Raytracer00 implements IRayTracerImplementation {
 
 	}
 
-	// TODO: PHONG
+
 	// calculate phong illumination model with material parameters material and
 	// materialN, light vector l, normal vector n, viewing vector v, ambient
 	// light Ia, diffuse and specular light Ids
@@ -267,6 +369,29 @@ public class Raytracer00 implements IRayTracerImplementation {
 		// System.out.println(ir+" "+ig+" "+ib);
 		return new Color(ir>1?1:ir, ig>1?1:ig, ib>1?1:ib);
 	}
+	
+    // calculate normalized face normal fn of the triangle p1, p2 and p3
+    // the return value is the area of triangle
+    // CAUTION: fn is an output parameter; the referenced object will be
+    // altered!
+    private float calculateN(float[] fn, float[] p1, float[] p2, float[] p3) {
+	float ax, ay, az, bx, by, bz;
+
+	// a = Vi2-Vi1, b = Vi3-Vi1
+
+
+	
+	
+	
+
+	// n =a x b
+
+
+	
+
+	// normalize n, calculate and return area of triangle
+	return normalize(fn) / 2;
+    }
 
 	// vector normalization
 	// CAUTION: vec is an in-/output parameter; the referenced object will be
@@ -280,6 +405,31 @@ public class Raytracer00 implements IRayTracerImplementation {
 
 		return l;
 	}
+	
+    // calculate triangle test
+    // is p (the intersection point with the plane through p1, p2 and p3) inside
+    // the triangle p1, p2 and p3?
+    // the return value answers this question
+    // a is an input parameter - the given area of the triangle p1, p2 and p3
+    // ai will be computed to be the areas of the sub-triangles to allow to
+    // compute barycentric coordinates of the intersection point p
+    // ai[0] is associated with bu (p1p2p) across from p3
+    // ai[1] is associated with bv (pp2p3) across from p1
+    // ai[2] is associated with bw (p1pp3) across form p2
+    // CAUTION: ai is an output parameter; the referenced object will be
+    // altered!
+    private boolean triangleTest(float[] p, float[] p1, float[] p2, float[] p3, float a, float ai[]) {
+	float tmp[] = new float[3];
+
+	//ai[0] = 
+	//ai[1] = 
+	//ai[2] = 
+
+	//if 
+	//    return true;
+
+	return false;
+    }
 
 	public static void main(String[] args) {
 		Raytracer00 rt = new Raytracer00();
