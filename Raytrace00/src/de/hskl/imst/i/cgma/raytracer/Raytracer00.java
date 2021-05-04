@@ -36,8 +36,8 @@ public class Raytracer00 implements IRayTracerImplementation {
 	private Raytracer00() {
 		try {
 
-			//gui.addObject(RTFileReader.read(I_Sphere.class, new File("data/ikugel.dat")));
-			gui.addObject(RTFileReader.read(I_Sphere.class, new File("data/dreieck1.dat")));
+//			gui.addObject(RTFileReader.read(I_Sphere.class, new File("data/ikugel.dat")));
+			gui.addObject(RTFileReader.read(T_Mesh.class, new File("data/dreiecke1.dat")));
 
 			objects = gui.getObjects();
 
@@ -90,7 +90,10 @@ public class Raytracer00 implements IRayTracerImplementation {
 				// x, y: view coordinates
 				x = ((float) xp / (float) (resx - 1)) * w - w / 2;
 				y = (((float) (resy - 1) - (float) yp) / (float) (resy - 1)) * h - h / 2;
-
+				
+//				x = 0;
+//				y = 0;
+				
 				// ray vector
 				rayVx = x - rayEx;
 				rayVy = y - rayEy;
@@ -114,7 +117,7 @@ public class Raytracer00 implements IRayTracerImplementation {
 
 		double minT = Float.MAX_VALUE;
 		int minObjectsIndex = -1;
-
+		int minIndex = -1;
 		float[] minIP = new float[3];
 		float[] minN = new float[3];
 		float[] minMaterial = new float[3];
@@ -218,13 +221,8 @@ public class Raytracer00 implements IRayTracerImplementation {
 
 				    // intermediate version
 				    // calculate normal n and triangle area a
-				    // a = 1/2 * |n| wobei n vector
 				    n = new float[3];
-				    n[0] = p2[1] * p1[2] - p2[2] * p1[1];
-				    n[1] = p2[2] * p1[0] - p2[0] * p1[2];
-				    n[2] = p2[0] * p1[1] - p2[1] * p1[0];
-				    float ln = normalize(n);
-				    a = 1/2 * ln;
+				    a = calculateN(n, p1, p2, p3);
 
 				    //????? / länge von rayV und n ??
 				    rayVn = rayVx * n[0] + rayVy * n[1] + rayVz * n[2];
@@ -237,24 +235,24 @@ public class Raytracer00 implements IRayTracerImplementation {
 				    if (Math.abs(rayVn) < 1E-7)
 					continue;
 
-				    pen = 
+				    pen = (p1[0] - rayEx) * n[0] + (p1[1] - rayEy) * n[1] + (p1[2] - rayEz) * n[2];
 
 				    // calculate intersection point with plane along the ray
-				    t = 
+				    t = pen / rayVn;
 
 				    // already a closer intersection point? => next triangle
 				    if (t >= minT)
 					continue;
 
 				    // the intersection point with the plane
-				    ip[0] = 
-				    ip[1] = 
-				    ip[2] = 
+				    ip[0] = rayEx + t * rayVx;
+				    ip[1] = rayEy + t * rayVy;
+				    ip[2] = rayEz + t * rayVz;
 
 				    // no intersection point with the triangle? => next
 				    // triangle
 				    if (!triangleTest(ip, p1, p2, p3, a, ai))
-					continue;
+				    	continue;
 
 				    // from here: t < minT and triangle intersection
 				    // I'm the winner until now!
@@ -376,19 +374,18 @@ public class Raytracer00 implements IRayTracerImplementation {
     // altered!
     private float calculateN(float[] fn, float[] p1, float[] p2, float[] p3) {
 	float ax, ay, az, bx, by, bz;
-
-	// a = Vi2-Vi1, b = Vi3-Vi1
-
-
+	//Ende minus anfang
+	ax = p2[0] - p1[0];
+	ay = p2[1] - p1[1];
+	az = p2[2] - p1[2];
+	bx = p3[0] - p1[0];
+	by = p3[1] - p1[1];
+	bz = p3[2] - p1[2];
 	
+    fn[0] = ay * bz - az * by;
+    fn[1] = az * bx - ax * bz;
+    fn[2] = ax * by - ay * bx;
 	
-	
-
-	// n =a x b
-
-
-	
-
 	// normalize n, calculate and return area of triangle
 	return normalize(fn) / 2;
     }
@@ -420,13 +417,13 @@ public class Raytracer00 implements IRayTracerImplementation {
     // altered!
     private boolean triangleTest(float[] p, float[] p1, float[] p2, float[] p3, float a, float ai[]) {
 	float tmp[] = new float[3];
+	
+	ai[0] = calculateN(tmp, p1, p2, p);
+	ai[1] = calculateN(tmp, p, p2, p3);
+	ai[2] = calculateN(tmp, p1, p, p3);
 
-	//ai[0] = 
-	//ai[1] = 
-	//ai[2] = 
-
-	//if 
-	//    return true;
+	if (Math.abs(a - ai[0] - ai[1] - ai[2]) <= 1E-5f)
+	    return true;
 
 	return false;
     }
