@@ -68,6 +68,9 @@ public class Raytracer00 implements IRayTracerImplementation {
 		float rayEx, rayEy, rayEz; // eye point==ray starting point
 		float rayVx, rayVy, rayVz; // ray vector
 		Color color;
+		
+		// prepare mesh data (normals and areas)
+		prepareMeshData();
 
 		// hardcoded viewing volume with fovy and near
 		setViewParameters(90.0f, 1.0f);
@@ -149,6 +152,10 @@ public class Raytracer00 implements IRayTracerImplementation {
 				sphere = (I_Sphere) scene;
 
 				float t;
+				
+				// no bounding box hit? -> next object
+				if (!bboxHit(sphere, rayEx, rayEy, rayEz, rayVx, rayVy, rayVz))
+				    continue;
 
 				// ray intersection uses quadratic equation
 				// a = rayV {scalar} rayV
@@ -207,6 +214,10 @@ public class Raytracer00 implements IRayTracerImplementation {
 				float t;
 				float[] n;
 				float[] ip = new float[3];
+				
+				// no bounding box hit? -> next object
+				if (!bboxHit(mesh, rayEx, rayEy, rayEz, rayVx, rayVy, rayVz))
+				    continue;
 
 				float a, rayVn, pen;
 				float[] p1, p2, p3;
@@ -221,6 +232,7 @@ public class Raytracer00 implements IRayTracerImplementation {
 
 				    // intermediate version
 				    // calculate normal n and triangle area a
+				    //TODO: fetch precalculated face areas and face normals
 				    n = new float[3];
 				    a = calculateN(n, p1, p2, p3);
 
@@ -426,6 +438,73 @@ public class Raytracer00 implements IRayTracerImplementation {
 	    return true;
 
 	return false;
+    }
+    
+    private boolean bboxHit(RT_Object object, float rayEx, float rayEy, float rayEz, float rayVx, float rayVy, float rayVz) {
+    	float t;
+    	float ip[] = new float[3];
+
+    	// front and back
+    	if (Math.abs(rayVz) > 1E-5) {
+    	    // front xy
+    	    t = 
+
+    	    ip[0] = 
+    	    ip[1] = 
+
+    	    if (ip[0] > object.min[0] && ip[0] < object.max[0] && ip[1] > object.min[1] && ip[1] < object.max[1])
+    		return true;
+
+    	    // back xy
+    	    t = 
+
+    	    ip[0] = 
+    	    ip[1] = 
+
+    	    if ()
+    		return true;
+    	}
+
+    	// left and right
+    	if (Math.abs(rayVx) > 1E-5) {
+  
+    	}
+    	// top and bottom
+    	if (Math.abs(rayVy) > 1E-5) {
+ 
+    	}
+    	return false;
+        }
+    
+    // precalulation of triangle normals and triangle areas
+    private void prepareMeshData() {
+	RTFile scene;
+
+	System.out.println("Vorverarbeitung 1 läuft");
+
+	float[] p1, p2, p3;
+
+	for (int objectsNumber = 0; objectsNumber < objects.size(); objectsNumber++) {
+	    scene = objects.get(objectsNumber);
+
+	    if (scene.getHeader() == "TRIANGLE_MESH") {
+		T_Mesh mesh = (T_Mesh) scene;
+
+		// init memory
+		mesh.triangleNormals = 
+		mesh.triangleAreas = 
+
+		for (int i = 0; i < mesh.triangles.length; i++) {
+		    p1 = 
+		    p2 = 
+		    p3 = 
+
+		    // calculate and store triangle normal n and triangle area a
+		    mesh.triangleAreas[i] = 
+		}
+	    }
+	}
+	System.out.println("Vorverarbeitung 1 beendet");
     }
 
 	public static void main(String[] args) {
