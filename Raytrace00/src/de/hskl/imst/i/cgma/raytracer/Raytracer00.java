@@ -232,11 +232,9 @@ public class Raytracer00 implements IRayTracerImplementation {
 
 				    // intermediate version
 				    // calculate normal n and triangle area a
-				    //TODO: fetch precalculated face areas and face normals
-				    n = new float[3];
-				    a = calculateN(n, p1, p2, p3);
+				    n = mesh.triangleNormals[i];
+				    a = mesh.triangleAreas[i];
 
-				    //????? / länge von rayV und n ??
 				    rayVn = rayVx * n[0] + rayVy * n[1] + rayVz * n[2];
 
 				    // backface? => next triangle
@@ -491,16 +489,16 @@ public class Raytracer00 implements IRayTracerImplementation {
 		T_Mesh mesh = (T_Mesh) scene;
 
 		// init memory
-		mesh.triangleNormals = 
-		mesh.triangleAreas = 
+		mesh.triangleNormals = new float[mesh.triangles.length][3];
+		mesh.triangleAreas = new float[mesh.triangles.length];
 
 		for (int i = 0; i < mesh.triangles.length; i++) {
-		    p1 = 
-		    p2 = 
-		    p3 = 
+		    p1 = mesh.vertices[mesh.triangles[i][0]];
+		    p2 = mesh.vertices[mesh.triangles[i][1]];
+		    p3 = mesh.vertices[mesh.triangles[i][2]];
 
 		    // calculate and store triangle normal n and triangle area a
-		    mesh.triangleAreas[i] = 
+		    mesh.triangleAreas[i] = calculateN(mesh.triangleNormals[i], p1, p2, p3);
 		}
 	    }
 	}

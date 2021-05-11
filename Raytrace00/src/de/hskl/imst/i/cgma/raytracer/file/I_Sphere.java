@@ -42,6 +42,10 @@ public class I_Sphere extends RT_Object {
 	
 	@Override
 	public void calcBoundingBox() {
+		for(int i = 0; i < 3; i++) {
+			this.min[i] = this.center[i] - this.radius;
+			this.max[i] = this.center[i] + this.radius;
+		}
 	}
 
 	private static final String materialRegex =

@@ -91,6 +91,7 @@ public class T_Mesh extends RT_Object {
 	
 	@Override
 	public void calcBoundingBox() {
+		
 	}
 	
 	private static final String fInfoRegex =
