@@ -91,7 +91,22 @@ public class T_Mesh extends RT_Object {
 	
 	@Override
 	public void calcBoundingBox() {
+		this.min[0] = this.vertices[0][0];
+		this.min[1] = this.vertices[0][1];
+		this.min[2] = this.vertices[0][2];
+		this.max[0] = this.vertices[0][0];
+		this.max[1] = this.vertices[0][1];
+		this.max[2] = this.vertices[0][2];
 		
+		for(int i = 1; i < this.vertices.length; i++) {
+			for(int j = 0; j < 3; j++) {
+				if(this.vertices[i][j] < this.min[j])
+					this.min[j] = this.vertices[i][j];
+				
+				if(this.vertices[i][j] > this.max[j])
+					this.max[j] = this.vertices[i][j];
+			}
+		}
 	}
 	
 	private static final String fInfoRegex =

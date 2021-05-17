@@ -85,6 +85,7 @@ public class Raytracer00 implements IRayTracerImplementation {
 		// xp, yp: pixel coordinates
 		for (int xp = 0; xp < resx; ++xp) {
 			for (int yp = 0; yp < resy; ++yp) {
+				gui.updateSTime();
 				// for demo purposes
 				// gui.setPixel(xp, yp, Color.WHITE.getRGB());
 				// gui.setPixel(xp, yp, new Color(rd.nextFloat(), rd.nextFloat(),
@@ -445,31 +446,63 @@ public class Raytracer00 implements IRayTracerImplementation {
     	// front and back
     	if (Math.abs(rayVz) > 1E-5) {
     	    // front xy
-    	    t = 
+    	    t = (object.max[2] - rayEz) / rayVz; 
 
-    	    ip[0] = 
-    	    ip[1] = 
+    	    ip[0] = rayEx + t * rayVx;
+    	    ip[1] = rayEy + t * rayVy;
 
     	    if (ip[0] > object.min[0] && ip[0] < object.max[0] && ip[1] > object.min[1] && ip[1] < object.max[1])
-    		return true;
+    	    	return true;
 
     	    // back xy
-    	    t = 
+    	    t = (object.min[2] - rayEz) / rayVz;
 
-    	    ip[0] = 
-    	    ip[1] = 
+    	    ip[0] = rayEx + t * rayVx;
+    	    ip[1] = rayEy + t * rayVy;
 
-    	    if ()
-    		return true;
+    	    if (ip[0] > object.min[0] && ip[0] < object.max[0] && ip[1] > object.min[1] && ip[1] < object.max[1])
+    	    	return true;
     	}
 
     	// left and right
     	if (Math.abs(rayVx) > 1E-5) {
-  
+    		// left yz
+    		t = (object.min[0] - rayEx) / rayVx;
+    		
+    		ip[1] = rayEy + t * rayVy;
+    		ip[2] = rayEz + t * rayVz;
+    		
+    		if(ip[1] > object.min[1] && ip[1] < object.max[1] && ip[2] > object.min[2] && ip[2] < object.max[2])
+    			return true;
+    		
+    		//right yz
+    		t = (object.max[0] - rayEx) / rayVx;
+    		
+    		ip[1] = rayEy + t * rayVy;
+    		ip[2] = rayEz + t * rayVz;
+    		
+    		if(ip[1] > object.min[1] && ip[1] < object.max[1] && ip[2] > object.min[2] && ip[2] < object.max[2])
+    			return true;
     	}
     	// top and bottom
     	if (Math.abs(rayVy) > 1E-5) {
- 
+    		// top xz
+    		t = (object.max[1] - rayEy) / rayVy;
+    		
+    		ip[0] = rayEx + t * rayVx;
+    		ip[2] = rayEz + t * rayVz;
+    		
+    		if(ip[0] > object.min[0] && ip[0] < object.max[0] && ip[2] > object.min[2] && ip[2] < object.max[2])
+    			return true;
+    		
+    		// bottom xz
+    		t = (object.min[1] - rayEy) / rayVy;
+    		
+    		ip[0] = rayEx + t * rayVx;
+    		ip[2] = rayEz + t * rayVz;
+    		
+    		if(ip[0] > object.min[0] && ip[0] < object.max[0] && ip[2] > object.min[2] && ip[2] < object.max[2])
+    			return true;
     	}
     	return false;
         }
