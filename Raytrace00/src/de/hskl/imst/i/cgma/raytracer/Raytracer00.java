@@ -80,8 +80,11 @@ public class Raytracer00 implements IRayTracerImplementation {
 		rayEz = 0;
 
 		z = -near;
+		
+		// prepare mesh data for shading
+		precalculateMeshDataShading();
 
-		Random rd = new Random();
+//		Random rd = new Random();
 		// xp, yp: pixel coordinates
 		for (int xp = 0; xp < resx; ++xp) {
 			for (int yp = 0; yp < resy; ++yp) {
@@ -126,6 +129,7 @@ public class Raytracer00 implements IRayTracerImplementation {
 		float[] minN = new float[3];
 		float[] minMaterial = new float[3];
 		float minMaterialN = 1;
+		float bu = 0, bv = 0, bw = 1;
 
 		float[] v = new float[3];
 		float[] l = new float[3];
@@ -294,6 +298,48 @@ public class Raytracer00 implements IRayTracerImplementation {
 					 minMaterialN= mesh.materialsN[matIndex];
 					
 					break;
+				    case 'g':
+				    case 'G':
+					// remember barycentric coordinates bu, bv, bw for shading
+					bu = 
+					bv = 
+					bw = 
+
+					break;
+				    case 'p':
+				    case 'P':
+					// the normal is barycentrically interpolated between
+					// the three vertices
+					bu = 
+					bv = 
+					bw = 
+					float nTemp[] = new float[3];
+					nTemp[0] = 
+					nTemp[1] = 
+					nTemp[2] = 
+					
+					minN = nTemp;
+
+					// intermediate version
+					// the material is not interpolated
+					// matIndex =
+					// mesh.verticesMat[mesh.triangles[minIndex][0]];
+					// minMaterial = mesh.materials[matIndex];
+					// minMaterialN = mesh.materialsN[matIndex];
+
+					// the material is barycentrically interpolated between
+					// the three vertex materials
+					int matIndex0 = 
+					int matIndex1 = 
+					int matIndex2 = 
+					float materialTemp[] = new float[9];
+					int materialNTemp;
+					for (int k = 0; k < 9; k++) {
+					    materialTemp[k] = 
+					}
+					minMaterial = materialTemp;
+					materialNTemp = 
+					minMaterialN = materialNTemp;
 				    }
 				}
 			} else 
@@ -321,6 +367,22 @@ public class Raytracer00 implements IRayTracerImplementation {
 		    case 'F':
 			// illumination can be calculated here
 			// this is a variant between flat und phong shading
+//			return phongIlluminate(minMaterial, minMaterialN, l, minN, v, Ia, Ids);
+			// lookup triangle color of triangle hit
+			return new Color(                                      );
+		    case 'g':
+		    case 'G':
+			// the color is barycentrically interpolated between the three
+			// vertex colors
+			float colorf[] = new float[3];
+			colorf[0] = 
+			colorf[1] = 
+			colorf[2] = 
+
+			return new Color(                                      );
+		    case 'p':
+		    case 'P':
+			// calculate the color per per pixel phong lightning
 			return phongIlluminate(minMaterial, minMaterialN, l, minN, v, Ia, Ids);
 		    }
 		}
@@ -536,6 +598,187 @@ public class Raytracer00 implements IRayTracerImplementation {
 	    }
 	}
 	System.out.println("Vorverarbeitung 1 beendet");
+    }
+    
+    // view dependend precalculation dependend on type of mesh shading
+    // vertexNormals for phong and gouraud shading
+    // vertexColors for gouraud shading
+    // triangleColors for flat lighting
+    private void precalculateMeshDataShading() {
+	RTFile scene;
+
+	System.out.println("Vorverarbeitung 2 läuft");
+
+	float rayEx, rayEy, rayEz, rayVx, rayVy, rayVz;
+	double rayVn;
+	Color color;
+	float x, y, z;
+	float[] ip = new float[3];
+	float[] n = new float[3];
+	float[] l = new float[3];
+	float[] v = new float[3];
+	float[] material;
+	float materialN;
+	int matIndex;
+
+	for (int objectsNumber = 0; objectsNumber < objects.size(); objectsNumber++) {
+	    scene = objects.get(objectsNumber);
+
+	    if (scene.getHeader() == "TRIANGLE_MESH") {
+		T_Mesh mesh = (T_Mesh) scene;
+
+		switch (mesh.fgp) {
+		case 'f':
+		case 'F':
+		    // for flat-shading: initialize and calculate triangle
+		    // colors
+		    mesh.triangleColors = 
+
+		    rayEx = 0.0f;
+		    rayEy = 0.0f;
+		    rayEz = 0.0f;
+
+		    // loop over all triangles
+		    for (int i = 0; i < mesh.triangles.length; i++) {
+			// the intersection point is the first vertex of the
+			// triangle
+			ip = 
+
+			// the material is the material of the first triangle
+			// point
+			matIndex = 
+			material = 
+			materialN = 
+
+			// x, y, z: view coordinates are intersection point
+			x = ip[0];
+			y = ip[1];
+			z = ip[2];
+
+			// ray vector
+			rayVx = x - rayEx;
+			rayVy = y - rayEy;
+			rayVz = z - rayEz;
+
+			// fetch precalculated face normal
+			n = 
+
+			rayVn = rayVx * n[0] + rayVy * n[1] + rayVz * n[2];
+
+			// backface? => next triangle
+			if (rayVn >= 0)
+			    continue;
+
+			// light vector at the intersection point
+			l[0] = ICenter[0] - ip[0];
+			l[1] = ICenter[1] - ip[1];
+			l[2] = ICenter[2] - ip[2];
+			normalize(l);
+
+			// viewing vector at intersection point
+			v[0] = -rayVx;
+			v[1] = -rayVy;
+			v[2] = -rayVz;
+			normalize(v);
+
+			// illuminate
+			color = phongIlluminate(material, materialN, l, n, v, Ia, Ids);
+
+			// write color to triangle
+			mesh.triangleColors[i][0] =
+			mesh.triangleColors[i][1] = 
+			mesh.triangleColors[i][2] = 
+
+		    break;
+
+		case 'p':
+		case 'P':
+		case 'g':
+		case 'G':
+		    // initialize and calculate averaged vertex normals
+		    mesh.vertexNormals = 
+
+		    // loop over all vertices to initialize
+		    for (int j = 0; j < mesh.vertices.length; j++)
+			for (int k = 0; k < 3; k++)
+			    mesh.vertexNormals[j][k] = 0.0f;
+
+		    // loop over all faces to contribute
+		    for (int i = 0; i < mesh.triangles.length; i++)
+			for (int j = 0; j < 3; j++)
+			    for (int k = 0; k < 3; k++)
+				
+
+		    // loop over all vertices to normalize
+		    for (int j = 0; j < mesh.vertices.length; j++) {
+			
+		    }
+
+		    // these are all preparations for phong shading
+		    if (mesh.fgp == 'p' || mesh.fgp == 'P')
+			break;
+
+		    // for gouraud-shading: initialize and calculate vertex
+		    // colors
+		    mesh.vertexColors = 
+
+		    rayEx = 0.0f;
+		    rayEy = 0.0f;
+		    rayEz = 0.0f;
+
+		    // loop over all vertices
+		    for (int i = 0; i < mesh.vertices.length; i++) {
+			// the intersection point is the vertex
+			ip = 
+
+			// the material is the material of the vertex
+			matIndex = 
+			material = 
+			materialN = 
+
+			// x, y, z: view coordinates are intersection point
+			x = ip[0];
+			y = ip[1];
+			z = ip[2];
+
+			// ray vector
+			rayVx = x - rayEx;
+			rayVy = y - rayEy;
+			rayVz = z - rayEz;
+
+			// fetch precalculated vertex normal
+			n = 
+
+			rayVn = rayVx * n[0] + rayVy * n[1] + rayVz * n[2];
+
+			// backface? => next vertex
+			if (rayVn >= 0)
+			    continue;
+
+			// light vector at the intersection point
+			l[0] = ICenter[0] - ip[0];
+			l[1] = ICenter[1] - ip[1];
+			l[2] = ICenter[2] - ip[2];
+			normalize(l);
+
+			// viewing vector at intersection point
+			v[0] = -rayVx;
+			v[1] = -rayVy;
+			v[2] = -rayVz;
+			normalize(v);
+
+			// illuminate
+			color = phongIlluminate(material, materialN, l, n, v, Ia, Ids);
+
+			// write color to vertex
+			mesh.vertexColors[i][0] = 
+			mesh.vertexColors[i][1] = 
+			mesh.vertexColors[i][2] = 
+		    }
+		}
+	    }
+	}
+	System.out.println("Vorverarbeitung 2 beendet");
     }
 
 	public static void main(String[] args) {
