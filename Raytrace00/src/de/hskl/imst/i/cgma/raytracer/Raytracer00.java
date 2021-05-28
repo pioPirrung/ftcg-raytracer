@@ -301,9 +301,9 @@ public class Raytracer00 implements IRayTracerImplementation {
 				    case 'g':
 				    case 'G':
 					// remember barycentric coordinates bu, bv, bw for shading
-					bu = 
-					bv = 
-					bw = 
+					bu = mesh.triangleAreas[0] / (mesh.triangleAreas[0] + mesh.triangleAreas[1] + mesh.triangleAreas[2]);
+					bv = mesh.triangleAreas[1] / (mesh.triangleAreas[0] + mesh.triangleAreas[1] + mesh.triangleAreas[2]);
+					bw = mesh.triangleAreas[2] / (mesh.triangleAreas[0] + mesh.triangleAreas[1] + mesh.triangleAreas[2]);
 
 					break;
 				    case 'p':
