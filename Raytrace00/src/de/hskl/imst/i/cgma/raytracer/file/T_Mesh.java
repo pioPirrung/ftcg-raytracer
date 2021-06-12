@@ -2,6 +2,8 @@ package de.hskl.imst.i.cgma.raytracer.file;
  
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.security.DrbgParameters.NextBytes;
+import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -87,6 +89,159 @@ public class T_Mesh extends RT_Object {
 		
 		// BBox berechnen
 		calcBoundingBox();
+	}
+	
+	@Override
+	protected void readObjContent(LineNumberReader objFileReader, LineNumberReader objVertsFileReader, LineNumberReader materialFileReader) throws IOException {
+		String line;
+		int nExpVerts, nExpTriangles;
+		materials = new float[1][9];	// ambient, diffuse, specular
+		materialsN = new int[1];		// n
+		fgp = 'p';
+		
+		//Parse material data from mtl file
+		if(materialFileReader!=null){
+			try {
+				//try to read lines of the file
+				while((line = materialFileReader.readLine()) != null) {
+					if(line.startsWith("Ka")){
+						String[] str=line.split("[ ]+");
+						materials[0][0] = Float.parseFloat(str[1]);
+						materials[0][1] = Float.parseFloat(str[2]);
+						materials[0][2] = Float.parseFloat(str[3]);
+					}
+					else
+					if(line.startsWith("Kd")){
+						String[] str=line.split("[ ]+");
+						materials[0][3] = Float.parseFloat(str[1]);
+						materials[0][4] = Float.parseFloat(str[2]);
+						materials[0][5] = Float.parseFloat(str[3]);
+					}
+					else
+					if(line.startsWith("Ks")){
+						String[] str=line.split("[ ]+");
+						materials[0][6] = Float.parseFloat(str[1]);
+						materials[0][7] = Float.parseFloat(str[2]);
+						materials[0][8] = Float.parseFloat(str[3]);
+					}
+					else
+					if(line.startsWith("Ns")){
+						String[] str = line.split("[ ]+");
+						materialsN[0] = Integer.parseInt(str[1]);
+					}
+				}
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				throw new IOException("Ungültiges Dateiformat!");
+			}
+		}
+		
+		//Parse obj data from obj file
+		nExpVerts = 0;
+		nExpTriangles = 0;
+		
+		if(objFileReader!=null){
+			try {
+				//try to read lines of the file
+				while((line = objFileReader.readLine()) != null) {
+					if(line.startsWith("v") && !line.startsWith("vn"))
+						nExpVerts += 1;
+					
+					if(line.startsWith("f"))
+						nExpTriangles += 1;
+				}
+				System.out.println(nExpVerts);
+				System.out.println(nExpTriangles);
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				throw new IOException("Ungültiges Dateiformat!");
+			}
+		}
+		
+		//nExpVerts += 1;
+		//nExpTriangles += 1;
+		
+		vertices = new float[nExpVerts][3];
+		verticesMat = new int[nExpVerts];
+		triangles = new int[nExpTriangles][3];
+		
+		if(objVertsFileReader!=null){
+			try {
+				int nVertsTemp = 0;
+				int nTrianglesTemp = 0;
+				//try to read lines of the file
+				while((line = objVertsFileReader.readLine()) != null) {
+					if(line.startsWith("v") && !line.startsWith("vn")) {
+						String[] str=line.split("[ ]+");
+						for(int i = 1; i < str.length; i++)
+							vertices[nVertsTemp][i-1] = Float.parseFloat(str[i]);
+						verticesMat[nVertsTemp] = 0;
+						nVertsTemp += 1;
+					}
+						
+					if(line.startsWith("f")) {
+						processFLine(line, nTrianglesTemp, triangles);
+						nTrianglesTemp += 1;
+					}
+						
+				}
+				
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				throw new IOException("Ungültiges Dateiformat!");
+			}
+		}
+		
+		// BBox berechnen
+		calcBoundingBox();
+	}
+	
+	private void processFLine(String line, int nTriangles, int[][] triangles) {
+		String [] tokens=line.split("[ ]+");
+		int c=tokens.length;
+
+		if(tokens[1].matches("[0-9]+")){
+			if(c==4){//3 faces
+				for(int i=1; i<c; i++) 
+					if(Integer.parseInt(tokens[i]) >= verticesMat.length)
+						triangles[nTriangles][i-1] = Integer.parseInt(tokens[i]) - 1;
+					else
+						triangles[nTriangles][i-1] = Integer.parseInt(tokens[i]);
+			}
+		}
+		if(tokens[1].matches("[0-9]+/[0-9]+")){
+			if(c==4){//3 faces
+				for(int i=1; i<c; i++){
+					String str = tokens[i].split("/")[0];
+					if(Integer.parseInt(str) >= verticesMat.length)
+						triangles[nTriangles][i-1] = Integer.parseInt(str) - 1;
+					else
+						triangles[nTriangles][i-1] = Integer.parseInt(str);
+				}
+			}
+		}
+		if(tokens[1].matches("[0-9]+//[0-9]+")){
+			if(c==4){//3 faces
+				for(int i=1; i<c; i++){
+					String str = tokens[i].split("//")[0];
+					if(Integer.parseInt(str) >= verticesMat.length)
+						triangles[nTriangles][i-1] = Integer.parseInt(str) - 1;
+					else
+						triangles[nTriangles][i-1] = Integer.parseInt(str);
+				}
+			}
+		}
+		if(tokens[1].matches("[0-9]+/[0-9]+/[0-9]+")){
+			if(c==4){//3 faces
+				for(int i=1; i<c; i++){
+					String str = tokens[i].split("/")[0];
+					triangles[nTriangles][i-1] = Integer.parseInt(str);
+				}
+			}
+		}
 	}
 	
 	@Override

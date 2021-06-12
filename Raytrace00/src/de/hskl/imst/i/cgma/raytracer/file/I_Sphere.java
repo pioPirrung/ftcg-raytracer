@@ -41,6 +41,11 @@ public class I_Sphere extends RT_Object {
 	}
 	
 	@Override
+	protected void readObjContent(LineNumberReader objFileReader, LineNumberReader objVertsFileReader, LineNumberReader materialFileReader) throws IOException {
+		System.out.println("Implicit Sphere has no Obj Parsing implemented");
+	}
+	
+	@Override
 	public void calcBoundingBox() {
 		for(int i = 0; i < 3; i++) {
 			this.min[i] = this.center[i] - this.radius;
@@ -52,4 +57,5 @@ public class I_Sphere extends RT_Object {
 			"(\\-?[0-9]+\\.[0-9]+) +(\\-?[0-9]+\\.[0-9]+) +(\\-?[0-9]+\\.[0-9]+) +(\\-?[0-9]+\\.[0-9]+) +(\\-?[0-9]+\\.[0-9]+) +(\\-?[0-9]+\\.[0-9]+) +(\\-?[0-9]+\\.[0-9]+) +(\\-?[0-9]+\\.[0-9]+) +(\\-?[0-9]+\\.[0-9]+) +([0-9]+)";
 	private static final String paramterRegex =
 			"(\\-?[0-9]+\\.[0-9]+) +(\\-?[0-9]+\\.[0-9]+) +(\\-?[0-9]+\\.[0-9]+) +(\\-?[0-9]+\\.[0-9]+)";
+
 }

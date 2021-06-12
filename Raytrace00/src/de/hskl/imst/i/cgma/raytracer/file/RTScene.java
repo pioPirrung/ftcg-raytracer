@@ -1,5 +1,6 @@
 package de.hskl.imst.i.cgma.raytracer.file;
  
+import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.List;
 
@@ -15,6 +16,12 @@ public class RTScene extends RTFile {
 	@Override
 	public void readContent(LineNumberReader br) {
 		// TODO Auto-generated method stub
+	}
+	
+	@Override
+	protected void readObjContent(LineNumberReader objFileReader, LineNumberReader objVertsFileReader, LineNumberReader materialFileReader) throws IOException {
+		// TODO Auto-generated method stub
+		
 	}
 
 	public static class RTSceneGraphNode {
