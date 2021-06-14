@@ -2,8 +2,6 @@ package de.hskl.imst.i.cgma.raytracer.file;
  
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.security.DrbgParameters.NextBytes;
-import java.text.ParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -97,12 +95,16 @@ public class T_Mesh extends RT_Object {
 		int nExpVerts, nExpTriangles;
 		materials = new float[1][9];	// ambient, diffuse, specular
 		materialsN = new int[1];		// n
-		fgp = 'p';
+		fgp = 'p';						// using phong as default
 		
-		//Parse material data from mtl file
+		//From here parse material data from mtl file. To know which color the object will have
 		if(materialFileReader!=null){
 			try {
 				//try to read lines of the file
+				// ka = ambient
+				// kd = diffuse
+				// ks = specular
+				// ns = n
 				while((line = materialFileReader.readLine()) != null) {
 					if(line.startsWith("Ka")){
 						String[] str=line.split("[ ]+");
@@ -137,13 +139,16 @@ public class T_Mesh extends RT_Object {
 			}
 		}
 		
-		//Parse obj data from obj file
+		//From here arse obj data from obj file. For this we need to know how much vertices and triangle faces the obj file has.
+		//We need this to initialize the arrays!
 		nExpVerts = 0;
 		nExpTriangles = 0;
 		
 		if(objFileReader!=null){
 			try {
 				//try to read lines of the file
+				// v but NOT vn means the amount of vertices in the obj file
+				// f means the triangle faces in obj file
 				while((line = objFileReader.readLine()) != null) {
 					if(line.startsWith("v") && !line.startsWith("vn"))
 						nExpVerts += 1;
@@ -160,9 +165,7 @@ public class T_Mesh extends RT_Object {
 			}
 		}
 		
-		//nExpVerts += 1;
-		//nExpTriangles += 1;
-		
+		//initialize arrays for vertices and triangle faces data
 		vertices = new float[nExpVerts][3];
 		verticesMat = new int[nExpVerts];
 		triangles = new int[nExpTriangles][3];
@@ -172,6 +175,9 @@ public class T_Mesh extends RT_Object {
 				int nVertsTemp = 0;
 				int nTrianglesTemp = 0;
 				//try to read lines of the file
+				//v but NOT vn means vertices, store correct vertices in vertices array
+				//verticesMat is always 0 because the whole obj only has one color!
+				//f store triangle faces in triangles array. Check processFLine method for further informations.
 				while((line = objVertsFileReader.readLine()) != null) {
 					if(line.startsWith("v") && !line.startsWith("vn")) {
 						String[] str=line.split("[ ]+");
@@ -199,6 +205,14 @@ public class T_Mesh extends RT_Object {
 		calcBoundingBox();
 	}
 	
+	/**
+	 * 
+	 * @param line Complete line of the file as String
+	 * @param nTriangles Current triangle index
+	 * @param triangles triangle array where to store triangle faces
+	 * 
+	 * There are 4 possibility's an obj file can store triangle faces. Check which one is used and parse the vertex data from the faces.
+	 */
 	private void processFLine(String line, int nTriangles, int[][] triangles) {
 		String [] tokens=line.split("[ ]+");
 		int c=tokens.length;
@@ -206,10 +220,7 @@ public class T_Mesh extends RT_Object {
 		if(tokens[1].matches("[0-9]+")){
 			if(c==4){//3 faces
 				for(int i=1; i<c; i++) 
-					if(Integer.parseInt(tokens[i]) >= verticesMat.length)
-						triangles[nTriangles][i-1] = Integer.parseInt(tokens[i]) - 1;
-					else
-						triangles[nTriangles][i-1] = Integer.parseInt(tokens[i]);
+					triangles[nTriangles][i-1] = Integer.parseInt(tokens[i]) - 1;
 			}
 		}
 		if(tokens[1].matches("[0-9]+/[0-9]+")){
@@ -218,8 +229,6 @@ public class T_Mesh extends RT_Object {
 					String str = tokens[i].split("/")[0];
 					if(Integer.parseInt(str) >= verticesMat.length)
 						triangles[nTriangles][i-1] = Integer.parseInt(str) - 1;
-					else
-						triangles[nTriangles][i-1] = Integer.parseInt(str);
 				}
 			}
 		}
@@ -227,10 +236,7 @@ public class T_Mesh extends RT_Object {
 			if(c==4){//3 faces
 				for(int i=1; i<c; i++){
 					String str = tokens[i].split("//")[0];
-					if(Integer.parseInt(str) >= verticesMat.length)
-						triangles[nTriangles][i-1] = Integer.parseInt(str) - 1;
-					else
-						triangles[nTriangles][i-1] = Integer.parseInt(str);
+					triangles[nTriangles][i-1] = Integer.parseInt(str) - 1;
 				}
 			}
 		}
