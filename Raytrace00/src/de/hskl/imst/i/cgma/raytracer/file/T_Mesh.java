@@ -135,7 +135,7 @@ public class T_Mesh extends RT_Object {
 			}
 			catch (Exception e) {
 				e.printStackTrace();
-				throw new IOException("Ungültiges Dateiformat!");
+				throw new IOException("Ungültiges Dateiformat! " + materialFileReader.getLineNumber());
 			}
 		}
 		
@@ -161,7 +161,7 @@ public class T_Mesh extends RT_Object {
 			}
 			catch (Exception e) {
 				e.printStackTrace();
-				throw new IOException("Ungültiges Dateiformat!");
+				throw new IOException("Ungültiges Dateiformat! " + objFileReader.getLineNumber());
 			}
 		}
 		
@@ -197,7 +197,7 @@ public class T_Mesh extends RT_Object {
 			}
 			catch (Exception e) {
 				e.printStackTrace();
-				throw new IOException("Ungültiges Dateiformat!");
+				throw new IOException("Ungültiges Dateiformat! " + objVertsFileReader.getLineNumber());
 			}
 		}
 		
