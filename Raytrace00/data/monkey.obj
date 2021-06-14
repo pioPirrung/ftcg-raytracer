@@ -1,6 +1,6 @@
 # Blender v2.79 (sub 0) OBJ File: ''
 # www.blender.org
-mtllib test2.mtl
+mtllib monkey.mtl
 o Suzanne
 v 0.437500 1.161389 -2.233807
 v -0.437500 1.161389 -2.233807
