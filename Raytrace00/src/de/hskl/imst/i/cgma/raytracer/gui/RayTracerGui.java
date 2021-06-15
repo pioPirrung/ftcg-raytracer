@@ -231,7 +231,7 @@ public class RayTracerGui implements DropTargetListener {
                             prevFolderPath = fc.getSelectedFile().getParent();
                             addObject((RT_Object) RTFileReader.read(type, fc.getSelectedFile()));
                             callSgChangedListeners();
-                            System.out.println("foo");
+                            //System.out.println("foo");
                         }
                     } else
                         throw new IOException("Ungültige Datei");

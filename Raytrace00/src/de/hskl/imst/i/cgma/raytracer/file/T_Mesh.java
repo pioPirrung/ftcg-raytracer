@@ -244,7 +244,7 @@ public class T_Mesh extends RT_Object {
 			if(c==4){//3 faces
 				for(int i=1; i<c; i++){
 					String str = tokens[i].split("/")[0];
-					triangles[nTriangles][i-1] = Integer.parseInt(str);
+					triangles[nTriangles][i-1] = Integer.parseInt(str) - 1;
 				}
 			}
 		}
