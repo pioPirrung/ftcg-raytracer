@@ -1,6 +1,6 @@
 # Blender v2.92.0 OBJ File: ''
 # www.blender.org
-mtllib sphere.mtl
+mtllib cube.mtl
 o Cube
 v 1.587598 -0.515589 -3.462276
 v 0.414782 -1.440428 -2.132174
